@@ -69,21 +69,21 @@ workflow钉钉审批流程设置，基于vue开发。QQ交流群：639251756
 5.错误校验
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20200304140011896.jpg?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9ibG9nLmNzZG4ubmV0L20wXzM3Mjg1MTkz,size_16,color_FFFFFF,t_70)
 ```javascript
-let {type,error,nodeName,conditionNodes} = childNode
+let {type,error,nodeName,branchNodes} = nextNode
 if (type == 1 || type == 2) {
     if (error) {
         this.tipList.push({ name: nodeName, type: ["","审核人","抄送人"][type] })
     }
-    this.reErr(childNode)
+    this.reErr(nextNode)
 } else if (type == 3) {
-    this.reErr(childNode)
+    this.reErr(nextNode)
 } else if (type == 4) {
-    this.reErr(childNode)
-    for (var i = 0; i < conditionNodes.length; i++) {
-        if (conditionNodes[i].error) {
-            this.tipList.push({ name: conditionNodes[i].nodeName, type: "条件" })
+    this.reErr(nextNode)
+    for (var i = 0; i < branchNodes.length; i++) {
+        if (branchNodes[i].error) {
+            this.tipList.push({ name: branchNodes[i].nodeName, type: "条件" })
         }
-        this.reErr(conditionNodes[i])
+        this.reErr(branchNodes[i])
     }
 }
 ```

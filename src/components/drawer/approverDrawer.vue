@@ -1,5 +1,5 @@
 <template>
-    <el-drawer :append-to-body="true" title="审批人设置" :visible.sync="$store.state.approverDrawer" direction="rtl" class="set_promoter" size="550px" :before-close="saveApprover"> 
+    <el-drawer :append-to-body="true" title="审批人设置" :visible.sync="$store.state.approverDrawer" direction="rtl" class="set_promoter" size="550px" :before-close="saveApprover">
         <div class="demo-drawer__content">
             <div class="drawer_content">
                 <div class="approver_content">
@@ -80,12 +80,12 @@
                 <el-button type="primary" @click="saveApprover">确 定</el-button>
                 <el-button @click="closeDrawer">取 消</el-button>
             </div>
-            <employees-dialog 
+            <employees-dialog
                 :visible.sync="approverVisible"
                 :data.sync="checkedList"
                 @change="sureApprover"
             />
-            <role-dialog 
+            <role-dialog
                 :visible.sync="approverRoleVisible"
                 :data.sync="checkedRoleList"
                 @change="sureRoleApprover"
@@ -153,13 +153,13 @@ export default {
             this.approverRoleVisible = false;
         },
         saveApprover() {
-            this.approverConfig.error = !this.$func.setApproverStr(this.approverConfig)
+            //this.approverConfig.error = !this.$func.setApproverStr(this.approverConfig)
             this.$store.commit('updateApproverConfig',{
                 value:this.approverConfig,
                 flag:true,
                 id:this.$store.state.approverConfig.id
             })
-            this.$emit("update:nodeConfig", this.approverConfig);
+            this.$emit("update:processNode", this.approverConfig);
             this.closeDrawer()
         },
         closeDrawer(){

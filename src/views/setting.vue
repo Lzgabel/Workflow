@@ -3,7 +3,7 @@
 		<div class="fd-nav">
 			<div class="fd-nav-left">
 				<div class="fd-nav-back" @click="toReturn"><i class="anticon anticon-left"></i></div>
-				<div class="fd-nav-title">{{workFlowDef.name}}</div>
+				<div class="fd-nav-title">{{process.name}}</div>
 			</div>
 			<!-- <div class="fd-nav-center">
                 <div class="fd-nav-container">
@@ -27,7 +27,7 @@
 					<div :class="'zoom-in'+ (nowVal==300?' disabled':'')" @click="zoomSize(2)"></div>
 				</div>
 				<div class="box-scale" id="box-scale" :style="'transform: scale('+nowVal/100+'); transform-origin: 50% 0px 0px;'">
-					<nodeWrap :nodeConfig.sync="nodeConfig" :flowPermission.sync="flowPermission"
+					<nodeWrap :processNode.sync="processNode" :flowPermission.sync="flowPermission"
 						:isTried.sync="isTried" :tableId="tableId"></nodeWrap>
 					<div class="end-node">
 						<div class="end-node-circle"></div>
@@ -36,9 +36,9 @@
 				</div>
 			</section>
 		</div>
-		<errorDialog 
+		<errorDialog
 			:visible.sync="tipVisible"
-			:list="tipList"	
+			:list="tipList"
 		/>
 		<promoterDrawer />
 		<approverDrawer  :directorMaxLevel="directorMaxLevel"/>
@@ -52,6 +52,32 @@ import promoterDrawer from '@/components/drawer/promoterDrawer'
 import approverDrawer from '@/components/drawer/approverDrawer'
 import copyerDrawer from '@/components/drawer/copyerDrawer'
 import conditionDrawer from '@/components/drawer/conditionDrawer'
+import ElementUI from 'element-ui';
+
+function replace(node) {
+	var map = {
+		0: 'task',
+		1: 'task',
+		7: 'task',
+		4: 'exclusive',
+		10: 'parallel'
+	}
+	var type = node.type
+	if (map[type] == undefined) {
+		return null;
+	}
+	node.type = map[type]
+	if (node.branchNodes != null) {
+		for (var i in node.branchNodes) {
+			replace(node.branchNodes[i])
+		}
+	}
+	if (node.nextNode != undefined && node.nextNode != null) {
+		replace(node.nextNode)
+	}
+	return node;
+}
+
 export default {
 	components:{
 		errorDialog,
@@ -67,8 +93,8 @@ export default {
 			tipVisible: false,
 			nowVal: 100,
 			processConfig: {},
-			nodeConfig: {},
-			workFlowDef: {},
+			processNode: {},
+			process: {},
 			flowPermission: [],
 			directorMaxLevel: 0,
 			tableId: "",
@@ -76,54 +102,78 @@ export default {
 	},
 	created() {
 		this.$axios.get(`${process.env.BASE_URL}data.json`, {
-			workFlowDefId: this.$route.params.workFlowDefId
-		}).then(({data}) => {			
+			processId: this.$route.params.processId
+		}).then(({data}) => {
 			this.processConfig = data;
-			let {nodeConfig,flowPermission,directorMaxLevel,workFlowDef,tableId} = data
-			this.nodeConfig = nodeConfig;
+			let {processNode,flowPermission,directorMaxLevel,process,tableId} = data
+			this.processNode = processNode;
 			this.flowPermission = flowPermission;
 			this.directorMaxLevel = directorMaxLevel;
-			this.workFlowDef = workFlowDef
+			this.process = process
 			this.tableId = tableId
 		})
 	},
 	methods: {
+
 		toReturn() {
 			//window.location.href = ""
 		},
-		reErr({childNode}) {
-			if (childNode) {
-				let {type,error,nodeName,conditionNodes} = childNode
+		reErr({branchNodes}) {
+			if (branchNodes) {
+				let {type,error,nodeName,branchNodes} = branchNodes
 				if (type == 1 || type == 2) {
 					if (error) {
 						this.tipList.push({ name: nodeName, type: ["","审核人","抄送人"][type] })
 					}
-					this.reErr(childNode)
+					this.reErr(branchNodes)
 				} else if (type == 3) {
-					this.reErr(childNode)
+					this.reErr(branchNodes)
 				} else if (type == 4) {
-					this.reErr(childNode)
-					for (var i = 0; i < conditionNodes.length; i++) {
-						if (conditionNodes[i].error) {
-							this.tipList.push({ name: conditionNodes[i].nodeName, type: "条件" })
+					this.reErr(branchNodes)
+					for (var i = 0; i < branchNodes.length; i++) {
+						if (branchNodes[i].error) {
+							this.tipList.push({ name: branchNodes[i].nodeName, type: "条件" })
 						}
-						this.reErr(conditionNodes[i])
+						this.reErr(branchNodes[i])
 					}
 				}
 			} else {
-				childNode = null
+				branchNodes = null
 			}
 		},
 		saveSet() {
-			this.isTried = true;
-			this.tipList = [];
-			this.reErr(this.nodeConfig);
-			if (this.tipList.length != 0) {
-				this.tipVisible = true;
-				return;
-			}
-			this.processConfig.flowPermission = this.flowPermission
+			// this.isTried = true;
+			// this.tipList = [];
+			// this.reErr(this.processNode);
+			// if (this.tipList.length != 0) {
+			// 	this.tipVisible = true;
+			// 	return;
+			// }
+			// this.processConfig.flowPermission = this.flowPermission
+
+			var workflow = JSON.parse(JSON.stringify(this.processConfig));
+
+			workflow.processNode = replace(workflow.processNode.nextNode);
 			console.log(JSON.stringify(this.processConfig))
+			var data = {"json": JSON.stringify(workflow)};
+			this.$axios.post("http://localhost:8080/deploy", data).then(function(res){
+				ElementUI.Message({
+					message: '部署成功',
+					type: 'success'
+				});
+				const content = res
+				const blob = new Blob([content])
+				const elink = document.createElement('a')
+				elink.download = workflow.process.name + ".bpmn"
+				elink.style.display = 'none'
+				elink.href = URL.createObjectURL(blob)
+				document.body.appendChild(elink)
+				elink.click()
+				URL.revokeObjectURL(elink.href) // Release the URL object
+				document.body.removeChild(elink)
+			}, function(){
+				//console.log('请求失败处理');
+			});
 			// this.$axios.post("", this.processConfig).then(res => {
 			//     if (res.code == 200) {
 			//         this.$message.success("设置成功");

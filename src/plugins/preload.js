@@ -32,7 +32,7 @@ All.prototype = {
     },
     clearCookie(name) {
         var myDate = new Date();
-        myDate.setTime(-1000); //设置时间    
+        myDate.setTime(-1000); //设置时间
         for (var i = 0, len = name.length; i < len; i++) {
             document.cookie = "" + name[i] + "=''; path=/; expires=" + myDate.toGMTString();
         }
@@ -58,43 +58,44 @@ All.prototype = {
         });
         arr.splice(includesIndex, 1);
     },
-    setApproverStr(nodeConfig) {
-        if (nodeConfig.settype == 1) {
-            if (nodeConfig.nodeUserList.length == 1) {
-                return nodeConfig.nodeUserList[0].name
-            } else if (nodeConfig.nodeUserList.length > 1) {
-                if (nodeConfig.examineMode == 1) {
-                    return this.arrToStr(nodeConfig.nodeUserList)
-                } else if (nodeConfig.examineMode == 2) {
-                    return nodeConfig.nodeUserList.length + "人会签"
-                }
-            }
-        } else if (nodeConfig.settype == 2) {
-            let level = nodeConfig.directorLevel == 1 ? '直接主管' : '第' + nodeConfig.directorLevel + '级主管'
-            if (nodeConfig.examineMode == 1) {
-                return level
-            } else if (nodeConfig.examineMode == 2) {
-                return level + "会签"
-            }
-        } else if (nodeConfig.settype == 4) {
-            if (nodeConfig.selectRange == 1) {
-                return "发起人自选"
-            } else {
-                if (nodeConfig.nodeUserList.length > 0) {
-                    if (nodeConfig.selectRange == 2) {
-                        return "发起人自选"
-                    } else {
-                        return '发起人从' + nodeConfig.nodeUserList[0].name + '中自选'
-                    }
-                } else {
-                    return "";
-                }
-            }
-        } else if (nodeConfig.settype == 5) {
-            return "发起人自己"
-        } else if (nodeConfig.settype == 7) {
-            return '从直接主管到通讯录中级别最高的第' + nodeConfig.examineEndDirectorLevel + '个层级主管'
-        }
+    setApproverStr(processNode) {
+        console.log(processNode)
+        // if (processNode.settype == 1) {
+        //     if (processNode.nodeUserList.length == 1) {
+        //         return processNode.nodeUserList[0].name
+        //     } else if (processNode.nodeUserList.length > 1) {
+        //         if (processNode.examineMode == 1) {
+        //             return this.arrToStr(processNode.nodeUserList)
+        //         } else if (processNode.examineMode == 2) {
+        //             return processNode.nodeUserList.length + "人会签"
+        //         }
+        //     }
+        // } else if (processNode.settype == 2) {
+        //     let level = processNode.directorLevel == 1 ? '直接主管' : '第' + processNode.directorLevel + '级主管'
+        //     if (processNode.examineMode == 1) {
+        //         return level
+        //     } else if (processNode.examineMode == 2) {
+        //         return level + "会签"
+        //     }
+        // } else if (processNode.settype == 4) {
+        //     if (processNode.selectRange == 1) {
+        //         return "发起人自选"
+        //     } else {
+        //         if (processNode.nodeUserList.length > 0) {
+        //             if (processNode.selectRange == 2) {
+        //                 return "发起人自选"
+        //             } else {
+        //                 return '发起人从' + processNode.nodeUserList[0].name + '中自选'
+        //             }
+        //         } else {
+        //             return "";
+        //         }
+        //     }
+        // } else if (processNode.settype == 5) {
+        //     return "发起人自己"
+        // } else if (processNode.settype == 7) {
+        //     return '从直接主管到通讯录中级别最高的第' + processNode.examineEndDirectorLevel + '个层级主管'
+        // }
     },
     dealStr(str, obj) {
         let arr = [];
@@ -107,47 +108,47 @@ All.prototype = {
             })
         }
         return arr.join("或")
-    },  
-    conditionStr(nodeConfig, index) {
-        var { conditionList, nodeUserList } = nodeConfig.conditionNodes[index];
-        if (conditionList.length == 0) {
-            return (index == nodeConfig.conditionNodes.length - 1) && nodeConfig.conditionNodes[0].conditionList.length != 0 ? '其他条件进入此流程' : '请设置条件'
-        } else {
-            let str = ""
-            for (var i = 0; i < conditionList.length; i++) {
-                var { columnId, columnType, showType, showName, optType, zdy1, opt1, zdy2, opt2, fixedDownBoxValue } = conditionList[i];
-                if (columnId == 0) {
-                    if (nodeUserList.length != 0) {
-                        str += '发起人属于：'
-                        str += nodeUserList.map(item => { return item.name }).join("或") + " 并且 "
-                    }
-                }
-                if (columnType == "String" && showType == "3") {
-                    if (zdy1) {
-                        str += showName + '属于：' + this.dealStr(zdy1, JSON.parse(fixedDownBoxValue)) + " 并且 "
-                    }
-                }
-                if (columnType == "Double") {
-                    if (optType != 6 && zdy1) {
-                        var optTypeStr = ["", "<", ">", "≤", "=", "≥"][optType]
-                        str += `${showName} ${optTypeStr} ${zdy1} 并且 `
-                    } else if (optType == 6 && zdy1 && zdy2) {
-                        str += `${zdy1} ${opt1} ${showName} ${opt2} ${zdy2} 并且 `
-                    }
-                }
-            }
-            return str ? str.substring(0, str.length - 4) : '请设置条件'
-        }
     },
-    copyerStr(nodeConfig) {
-        if (nodeConfig.nodeUserList.length != 0) {
-            return this.arrToStr(nodeConfig.nodeUserList)
-        } else {
-            if (nodeConfig.ccSelfSelectFlag == 1) {
-                return "发起人自选"
-            }
-        }
-    }, 
+    conditionStr(processNode, index) {
+        // var { conditionList, nodeUserList } = processNode.branchNodes[index];
+        // if (conditionList.length == 0) {
+        //     return (index == processNode.branchNodes.length - 1) && processNode.branchNodes[0].conditionList.length != 0 ? '其他条件进入此流程' : '请设置条件'
+        // } else {
+        //     let str = ""
+        //     for (var i = 0; i < conditionList.length; i++) {
+        //         var { columnId, columnType, showType, showName, optType, zdy1, opt1, zdy2, opt2, fixedDownBoxValue } = conditionList[i];
+        //         if (columnId == 0) {
+        //             if (nodeUserList.length != 0) {
+        //                 str += '发起人属于：'
+        //                 str += nodeUserList.map(item => { return item.name }).join("或") + " 并且 "
+        //             }
+        //         }
+        //         if (columnType == "String" && showType == "3") {
+        //             if (zdy1) {
+        //                 str += showName + '属于：' + this.dealStr(zdy1, JSON.parse(fixedDownBoxValue)) + " 并且 "
+        //             }
+        //         }
+        //         if (columnType == "Double") {
+        //             if (optType != 6 && zdy1) {
+        //                 var optTypeStr = ["", "<", ">", "≤", "=", "≥"][optType]
+        //                 str += `${showName} ${optTypeStr} ${zdy1} 并且 `
+        //             } else if (optType == 6 && zdy1 && zdy2) {
+        //                 str += `${zdy1} ${opt1} ${showName} ${opt2} ${zdy2} 并且 `
+        //             }
+        //         }
+        //     }
+        //     return str ? str.substring(0, str.length - 4) : '请设置条件'
+        // }
+    },
+    copyerStr(processNode) {
+        // if (processNode.nodeUserList.length != 0) {
+        //     return this.arrToStr(processNode.nodeUserList)
+        // } else {
+        //     if (processNode.ccSelfSelectFlag == 1) {
+        //         return "发起人自选"
+        //     }
+        // }
+    },
     toggleStrClass(item, key) {
         let a = item.zdy1 ? item.zdy1.split(",") : []
         return a.some(item => { return item == key });

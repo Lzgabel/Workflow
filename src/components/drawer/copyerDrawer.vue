@@ -1,5 +1,5 @@
 <template>
-    <el-drawer :append-to-body="true" title="抄送人设置" :visible.sync="$store.state.copyerDrawer" direction="rtl" class="set_copyer" size="550px" :before-close="saveCopyer"> 
+    <el-drawer :append-to-body="true" title="抄送人设置" :visible.sync="$store.state.copyerDrawer" direction="rtl" class="set_copyer" size="550px" :before-close="saveCopyer">
         <div class="demo-drawer__content">
             <div class="copyer_content drawer_content">
                 <el-button type="primary" @click="addCopyer">添加成员</el-button>
@@ -17,7 +17,7 @@
                 <el-button type="primary" @click="saveCopyer">确 定</el-button>
                 <el-button @click="closeDrawer">取 消</el-button>
             </div>
-            <employees-role-dialog 
+            <employees-role-dialog
                 :visible.sync="copyerVisible"
                 :data.sync="checkedList"
                 @change="sureCopyer"
@@ -61,7 +61,7 @@ export default {
         },
         saveCopyer() {
             this.copyerConfig.ccSelfSelectFlag = this.ccSelfSelectFlag.length == 0 ? 0 : 1;
-            this.copyerConfig.error = !this.$func.copyerStr(this.copyerConfig);
+            //this.copyerConfig.error = !this.$func.copyerStr(this.copyerConfig);
             this.$store.commit('updateCopyerConfig',{
                 value:this.copyerConfig,
                 flag:true,
@@ -71,7 +71,7 @@ export default {
         },
         closeDrawer(){
             this.$store.commit('updateCopyer',false)
-        },     
+        },
     }
 }
 </script>

@@ -12,7 +12,7 @@ export default new Vuex.Store({
         copyerConfig:{},
         conditionDrawer: false,
         conditionsConfig:{
-            conditionNodes: [],
+            branchNodes: [],
         },
     },
     mutations: {

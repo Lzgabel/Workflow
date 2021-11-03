@@ -1,7 +1,7 @@
 <template>
-    <el-drawer :append-to-body="true" title="条件设置" :visible.sync="$store.state.conditionDrawer" direction="rtl" class="condition_copyer" size="550px" :before-close="saveCondition"> 
+    <el-drawer :append-to-body="true" title="条件设置" :visible.sync="$store.state.conditionDrawer" direction="rtl" class="condition_copyer" size="550px" :before-close="this.$func.saveCondition">
         <select v-model="conditionConfig.priorityLevel" class="priority_level">
-            <option v-for="item in conditionsConfig.conditionNodes.length" :value="item" :key="item">优先级{{item}}</option>
+            <option v-for="item in conditionsConfig.branchNodes.length" :value="item" :key="item">优先级{{item}}</option>
         </select>
         <div class="demo-drawer__content">
             <div class="condition_content drawer_content">
@@ -58,7 +58,7 @@
                     <p>请选择用来区分审批流程的条件字段</p>
                     <p class="check_box">
                         <a :class="$func.toggleClass(conditionList,{columnId:0},'columnId')&&'active'" @click="$func.toChecked(conditionList,{columnId:0},'columnId')">发起人</a>
-                        <a v-for="(item,index) in conditions" :key="index" :class="$func.toggleClass(conditionList,item,'columnId')&&'active'" 
+                        <a v-for="(item,index) in conditions" :key="index" :class="$func.toggleClass(conditionList,item,'columnId')&&'active'"
                         @click="$func.toChecked(conditionList,item,'columnId')">{{item.showName}}</a>
                     </p>
                     <span slot="footer" class="dialog-footer">
@@ -67,7 +67,7 @@
                     </span>
                 </el-dialog>
             </div>
-            <employees-role-dialog 
+            <employees-role-dialog
                 :visible.sync="conditionRoleVisible"
                 :data.sync="checkedList"
                 @change="sureConditionRole"
@@ -91,7 +91,7 @@ export default {
         return {
             conditionVisible: false,
             conditionsConfig: {
-                conditionNodes: [],
+                branchNodes: [],
             },
             conditionConfig: {},
             PriorityLevel:"",
@@ -111,7 +111,7 @@ export default {
             this.conditionsConfig = val.value;
             this.PriorityLevel = val.priorityLevel
             this.conditionConfig = val.priorityLevel
-            ?this.conditionsConfig.conditionNodes[val.priorityLevel - 1]
+            ?this.conditionsConfig.branchNodes[val.priorityLevel - 1]
             :{nodeUserList:[],conditionList:[]}
         },
     },
@@ -144,7 +144,7 @@ export default {
             });
             a.splice(includesIndex, 1);
             item.zdy1 = a.toString()
-        }, 
+        },
         addCondition() {
             this.conditionList = [];
             this.conditionVisible = true;
@@ -217,14 +217,14 @@ export default {
         },
         saveCondition() {
             this.$store.commit('updateCondition',false)
-            var a = this.conditionsConfig.conditionNodes.splice(this.PriorityLevel - 1, 1)//截取旧下标
-            this.conditionsConfig.conditionNodes.splice(this.conditionConfig.priorityLevel - 1, 0, a[0])//填充新下标
-            this.conditionsConfig.conditionNodes.map((item, index) => {
+            var a = this.conditionsConfig.branchNodes.splice(this.PriorityLevel - 1, 1)//截取旧下标
+            this.conditionsConfig.branchNodes.splice(this.conditionConfig.priorityLevel - 1, 0, a[0])//填充新下标
+            this.conditionsConfig.branchNodes.map((item, index) => {
                 item.priorityLevel = index + 1
             });
-            for (var i = 0; i < this.conditionsConfig.conditionNodes.length; i++) {
-                this.conditionsConfig.conditionNodes[i].error = this.$func.conditionStr(this.conditionsConfig, i) == "请设置条件" && i != this.conditionsConfig.conditionNodes.length - 1
-            }
+            // for (var i = 0; i < this.conditionsConfig.branchNodes.length; i++) {
+            //     this.conditionsConfig.branchNodes[i].error = this.$func.conditionStr(this.conditionsConfig, i) == "请设置条件" && i != this.conditionsConfig.branchNodes.length - 1
+            // }
             this.$store.commit('updateConditionsConfig',{
                 value:this.conditionsConfig,
                 flag:true,
